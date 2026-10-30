@@ -31,7 +31,7 @@ export default function RootLayout({
         <footer className="mt-20 py-10 text-center text-sm text-gray-700 border-t">
           <div className="font-semibold">Bergsgeten AB</div>
           <div>Telefon: 070 964 42 96</div>
-          <div>Mejl: info@bergsgeten.se</div>
+          <div>Mejl: bergsgeten.kontakt@gmail.com</div>
           <div>Åkersberga, Stockholm</div>
         </footer>
       </body>
