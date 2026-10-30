@@ -1,11 +1,51 @@
 "use client";
 
-import { FormEvent } from "react";
+import { useState, FormEvent } from "react";
 
 export default function Home() {
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    address: "",
+    phone: "",
+    size: "",
+    message: "",
+  });
+
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    alert("Offertförfrågan skickad (demo).");
+    setStatus("loading");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          message: `
+Adress: ${formData.address}
+Storlek på sten: ${formData.size}
+Beskrivning: ${formData.message}
+          `,
+        }),
+      });
+
+      if (response.ok) {
+        setStatus("success");
+        setFormData({ name: "", email: "", address: "", phone: "", size: "", message: "" });
+      } else {
+        setStatus("error");
+      }
+    } catch (error) {
+      console.error("Fel vid inskickning:", error);
+      setStatus("error");
+    }
   };
 
   return (
@@ -13,7 +53,6 @@ export default function Home() {
 
       {/* HERO */}
       <section className="relative mb-16">
-
         <img
           src="/goat.png"
           className="absolute right-[-80px] top-10 w-[450px] opacity-[0.08] mix-blend-multiply pointer-events-none select-none"
@@ -94,164 +133,116 @@ export default function Home() {
 
         {/* FORMULÄR */}
         <div
-  className="
-    bg-[#f8f6f2]
-    rounded-3xl
-    border border-[#d2c9b8]
-    shadow-[0_8px_20px_rgba(0,0,0,0.15)]
-    p-10
-    space-y-10
-  "
->
-  <div className="space-y-2">
-    <h2 className="text-3xl font-semibold text-[#2B2B2B] tracking-wide">
-      Skicka offertförfrågan
-    </h2>
-    <p className="text-sm text-gray-700">
-      Fyll i dina uppgifter så återkommer vi med en seriös bedömning och prisförslag.
-    </p>
-  </div>
-
-  <form onSubmit={handleSubmit} className="space-y-8">
-
-    <div className="space-y-6">
-
-      <div className="space-y-1">
-        <label className="text-sm font-medium text-[#2B2B2B]">Namn</label>
-        <input
-          type="text"
-          required
           className="
-            w-full
-            max-w-md
-            h-[60px]
-            rounded-2xl
-            border border-[#cfc7b8]
-            px-5 text-sm
-            bg-white
-            shadow-sm
-            focus:outline-none
-            focus:ring-2 focus:ring-[#3E5F43]
+            bg-[#f8f6f2]
+            rounded-3xl
+            border border-[#d2c9b8]
+            shadow-[0_8px_20px_rgba(0,0,0,0.15)]
+            p-10
+            space-y-10
           "
-        />
-      </div>
+        >
+          <div className="space-y-2">
+            <h2 className="text-3xl font-semibold text-[#2B2B2B] tracking-wide">
+              Skicka offertförfrågan
+            </h2>
+            <p className="text-sm text-gray-700">
+              Fyll i dina uppgifter så återkommer vi med en seriös bedömning och prisförslag.
+            </p>
+          </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium text-[#2B2B2B]">Adress</label>
-        <input
-          type="text"
-          required
-          className="
-            w-full
-            max-w-md
-            h-[60px]
-            rounded-2xl
-            border border-[#cfc7b8]
-            px-5 text-sm
-            bg-white
-            shadow-sm
-            focus:outline-none
-            focus:ring-2 focus:ring-[#3E5F43]
-          "
-        />
-      </div>
+          {status === "success" ? (
+            <div className="p-6 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 space-y-2">
+              <h3 className="font-semibold text-lg">Tack för din förfrågan!</h3>
+              <p className="text-sm">Vi har tagit emot ditt meddelande och återkommer till dig så snart som möjligt.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-6">
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium text-[#2B2B2B]">Telefonnummer</label>
-        <input
-          type="tel"
-          required
-          className="
-            w-full
-            max-w-md
-            h-[60px]
-            rounded-2xl
-            border border-[#cfc7b8]
-            px-5 text-sm
-            bg-white
-            shadow-sm
-            focus:outline-none
-            focus:ring-2 focus:ring-[#3E5F43]
-          "
-        />
-      </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-[#2B2B2B]">Namn *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full max-w-md h-[60px] rounded-2xl border border-[#cfc7b8] px-5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3E5F43]"
+                  />
+                </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium text-[#2B2B2B]">
-          Ungefärlig storlek på stenen
-        </label>
-        <input
-          type="text"
-          placeholder="t.ex. 1,5 × 1 m"
-          className="
-            w-full
-            max-w-md
-            h-[60px]
-            rounded-2xl
-            border border-[#cfc7b8]
-            px-5 text-sm
-            bg-white
-            shadow-sm
-            focus:outline-none
-            focus:ring-2 focus:ring-[#3E5F43]
-          "
-        />
-      </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-[#2B2B2B]">E-postadress *</label>
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full max-w-md h-[60px] rounded-2xl border border-[#cfc7b8] px-5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3E5F43]"
+                  />
+                </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium text-[#2B2B2B]">
-          Beskrivning av läget (valfritt)
-        </label>
-        <textarea
-          rows={4}
-          className="
-            w-full
-            max-w-md
-            rounded-2xl
-            border border-[#cfc7b8]
-            px-5 py-3 text-sm
-            bg-white
-            shadow-sm
-            focus:outline-none
-            focus:ring-2 focus:ring-[#3E5F43]
-          "
-        />
-      </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-[#2B2B2B]">Adress *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    className="w-full max-w-md h-[60px] rounded-2xl border border-[#cfc7b8] px-5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3E5F43]"
+                  />
+                </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium text-[#2B2B2B]">Bild på stenen</label>
-        <input
-          type="file"
-          accept="image/*"
-          className="w-full max-w-md text-sm"
-        />
-        <p className="text-xs text-gray-500">
-          En tydlig bild hjälper oss att göra en bättre bedömning.
-        </p>
-      </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-[#2B2B2B]">Telefonnummer *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full max-w-md h-[60px] rounded-2xl border border-[#cfc7b8] px-5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3E5F43]"
+                  />
+                </div>
 
-    </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-[#2B2B2B]">Ungefärlig storlek på stenen</label>
+                  <input
+                    type="text"
+                    placeholder="t.ex. 1,5 × 1 m"
+                    value={formData.size}
+                    onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                    className="w-full max-w-md h-[60px] rounded-2xl border border-[#cfc7b8] px-5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3E5F43]"
+                  />
+                </div>
 
-    <button
-      type="submit"
-      className="
-        w-[160px]
-        px-6 py-3
-        rounded-full
-        bg-[#3E5F43]
-        text-[#f3f0e7] font-semibold tracking-wide
-        border border-[#2f4634]
-        shadow-[0_4px_10px_rgba(0,0,0,0.25)]
-        hover:bg-[#324a35]
-        hover:shadow-[0_6px_14px_rgba(0,0,0,0.35)]
-        transition-all duration-300
-      "
-    >
-      Skicka offert
-    </button>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-[#2B2B2B]">Beskrivning av läget (valfritt)</label>
+                  <textarea
+                    rows={4}
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full max-w-md rounded-2xl border border-[#cfc7b8] px-5 py-3 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3E5F43]"
+                  />
+                </div>
 
-  </form>
-</div>
+              </div>
+
+              {status === "error" && (
+                <p className="text-sm text-red-600">Något gick fel när meddelandet skulle skickas. Försök igen om en stund.</p>
+              )}
+
+              <button
+                type="submit"
+                disabled={status === "loading"}
+                className="
+                  w-[160px] px-6 py-3 rounded-full bg-[#3E5F43] text-[#f3f0e7] font-semibold tracking-wide border border-[#2f4634] shadow-[0_4px_10px_rgba(0,0,0,0.25)] hover:bg-[#324a35] hover:shadow-[0_6px_14px_rgba(0,0,0,0.35)] transition-all duration-300 disabled:opacity-50
+                "
+              >
+                {status === "loading" ? "Skickar..." : "Skicka offert"}
+              </button>
+            </form>
+          )}
+        </div>
 
         {/* SIDOPANEL */}
         <div className="space-y-6">
@@ -277,14 +268,14 @@ export default function Home() {
 
             <a
               href="/stensprackning"
-              className="inline-flex items-center text-sm font-medium text-[#3E5F43] hover:underline"
+              className="inline-flex items-center text-sm font-medium text-[#3E5F43] hover:underline block"
             >
               Så fungerar stenspräckning →
             </a>
 
             <a
               href="/tjanster"
-              className="inline-flex items-center text-sm font-medium text-[#3E5F43] hover:underline"
+              className="inline-flex items-center text-sm font-medium text-[#3E5F43] hover:underline block"
             >
               Våra tjänster →
             </a>
