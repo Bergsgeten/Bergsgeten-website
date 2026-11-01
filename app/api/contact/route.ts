@@ -3,21 +3,24 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { name, email, phone, message } = await req.json();
+    const body = await request.json();
+    const { name, email, phone, message } = body;
 
     const data = await resend.emails.send({
-      from: 'Bergsgeten Hemsida <onboarding@resend.dev>',
-      to: ['leodeutgen0@gmail.com'], 
-      subject: `Ny förfrågan från ${name}`,
-      replyTo: email,
+      from: 'Bergsgeten Förfrågan <info@bergsgeten.se>',
+      to: ['bergsgeten.kontakt@gmail.com'], 
+      replyTo: email, // Gör att när du klickar "Svara" i Gmail så svarar du kunden direkt
+      subject: `Ny offertförfrågan från ${name}`,
       text: `
+Ny offertförfrågan via hemsidan:
+
 Namn: ${name}
 E-post: ${email}
-Telefon: ${phone || 'Ej angivet'}
+Telefon: ${phone}
 
-Meddelande:
+Meddelande/Detaljer:
 ${message}
       `,
     });
